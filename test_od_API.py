@@ -2,15 +2,15 @@ import requests
 import json
 import time
 import webbrowser
+import config as cfg
 
-URL = "http://127.0.0.1:8000"
+URL = cfg.URL
 
-CAM_NAME = "camera_efs_demo"
-CAM_SRC = r"D:\NCU\intern\workspace\EFS\program_example\sye_0414.mp4"
-
-MODEL_NAME = "sye"
-TASK_NAME = "od_task_demo"
-THRESHOLD = 0.6
+CAM_NAME = cfg.CAM_NAME
+CAM_SRC = cfg.CAM_SRC
+MODEL_NAME = cfg.MODEL_NAME
+TASK_NAME = cfg.TASK_NAME
+THRESHOLD = cfg.THRESHOLD
 
 session = requests.Session()
 
@@ -19,55 +19,69 @@ def pp(title, res):
     print(f"\n==== {title} ====")
     try:
         print(json.dumps(res.json(), indent=2, ensure_ascii=False))
-    except:
+    except Exception as e:
+        print(f"Error occurred: {e}")
         print(res.text)
 
 
-# ================= 1. 開攝影機 =================
-res = session.post(
-    f"{URL}/api/camera/open", data={"cam_type": "cv", "name": CAM_NAME, "src": CAM_SRC}
-)
-pp("camera/open", res)
+def test_camera():
+    # ================= 1. 開攝影機 =================
+    res = session.post(
+        f"{URL}/api/camera/open", data={"cam_type": "cv", "name": CAM_NAME, "src": CAM_SRC}
+    )
+    return pp("camera/open", res)
+    
 
+def test_init():
+    # ================= 2. init OD =================
+    res = session.post(
+        f"{URL}/api/init_od", json={"model_name": MODEL_NAME, "threshold": THRESHOLD}
+    )
+    return pp("init_od", res)
 
-# ================= 2. init OD =================
-res = session.post(
-    f"{URL}/api/init_od", json={"model_name": MODEL_NAME, "threshold": THRESHOLD}
-)
-pp("init_od", res)
+def test_live():
+    # ================= 3. start live =================
+    res = session.post(
+        f"{URL}/api/start_live_infer_od",
+        data={"cam_name": CAM_NAME},
+    )
 
+    data = res.json()
+    print(json.dumps(data, indent=2, ensure_ascii=False))
 
-# ================= 3. start live =================
-res = session.post(
-    f"{URL}/api/start_live_infer_od",
-    data={"cam_name": CAM_NAME},
-)
+    stream_url = URL + data["result"]["result_image"]
 
-data = res.json()
-print(json.dumps(data, indent=2, ensure_ascii=False))
+    print("\nSTREAM:", stream_url)
 
-stream_url = URL + data["result"]["result_image"]
+    webbrowser.open(stream_url)
+    # ================= 4. polling =================
+    for i in range(10):
+        res = session.get(f"{URL}/api/infer_od/live_result")
 
-print("\nSTREAM:", stream_url)
+        print(f"\nframe {i}")
+        try:
+            data = res.json()
+            print(json.dumps(data, indent=2, ensure_ascii=False))
+        except Exception as e:
+            print(f"Error occurred: {e}")
 
-webbrowser.open(stream_url)
-# ================= 4. polling =================
-for i in range(10):
-    res = session.get(f"{URL}/api/infer_od/live_result")
+        time.sleep(0.5)
 
-    print(f"\nframe {i}")
+def test_stop():
+    # ================= 5. stop =================
+    session.post(f"{URL}/api/stop_live_infer_od")
+
+def test_close_camera():
+    # ================= 6. close camera =================
+    session.post(f"{URL}/api/camera/close", json={"name": CAM_NAME})
+
+if __name__ == "__main__":
     try:
-        data = res.json()
-        print(json.dumps(data, indent=2, ensure_ascii=False))
-    except:
-        print("invalid json")
-
-    time.sleep(0.5)
-
-
-# ================= 5. stop =================
-session.post(f"{URL}/api/stop_live_infer_od")
-
-
-# ================= 6. close camera =================
-session.post(f"{URL}/api/camera/close", json={"name": CAM_NAME})
+        test_camera()
+        test_init()
+        test_live()
+    except Exception as e:
+        print(f"Error during testing: {e}")
+    finally:
+        test_stop()
+        test_close_camera()

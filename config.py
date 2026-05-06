@@ -3,7 +3,9 @@ URL = "http://127.0.0.1:8000"
 
 # ================= CAMERA =================
 CAM_NAME = "camera_efs_demo"
-CAM_SRC = r"D:\NCU\intern\workspace\EFS\program_example\syeFSM\SYE_FSM\template_cam\sye_special.mp4"
+CAM_SRC = (
+    r"D:\NCU\intern\workspace\EFS\program_example\SYE_FSM\template_cam\sye_special.mp4"
+)
 
 # ================= MODEL =================
 MODEL_NAME = "sye"

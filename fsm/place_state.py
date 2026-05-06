@@ -11,7 +11,7 @@ class PlaceState(BaseState):
     def update(self, events):
         if 'GLOVE_IN_PLATFORM' not in events:
             self.context.transition_to("idle")
-        if self.place_frames > self.context.MIN_PLACE_FRAMES:
+        elif self.place_frames > self.context.MIN_PLACE_FRAMES:
             self.context.transition_to("idle")
         else:
             self.place_frames += 1

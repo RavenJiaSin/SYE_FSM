@@ -6,5 +6,5 @@ class BaseState(ABC):
         self.context = context
 
     @abstractmethod
-    def update(self, obs):
+    def update(self, events):
         pass

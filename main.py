@@ -16,8 +16,8 @@ def main():
 
     # ================= INIT =================
     camera = CameraClient(cfg.URL)
-    od = ODClient(cfg.URL, cfg.TASK_NAME)
-    efs = EFSClient(cfg.URL, cfg.TASK_NAME)
+    od = ODClient(cfg.URL, cfg.CAM_NAME, cfg.TASK_NAME, cfg.MODEL_NAME, cfg.THRESHOLD)
+    efs = EFSClient(cfg.URL, cfg.CAM_NAME, cfg.TASK_NAME, cfg.MODEL_NAME, cfg.ALERT_AREA, cfg.THRESHOLD)
 
     perception = Perception()
     vision = VisionSystem(od, efs, perception)
@@ -62,6 +62,9 @@ def main():
             time.sleep(0.03)  # ~30 FPS control
 
     except KeyboardInterrupt:
+        print("KEYBOARD INTERRUPT - STOPPING SYSTEM")
+    except Exception as e:
+        print(e)
         print("STOPPING SYSTEM")
 
     finally:

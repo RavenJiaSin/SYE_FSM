@@ -23,6 +23,7 @@ def pp(title, data):
     print(json.dumps(data, indent=2, ensure_ascii=False))
 
 
+
 # ================= 1. camera =================
 def test_camera():
     res = session.post(
@@ -112,10 +113,14 @@ def test_stream():
     webbrowser.open(stream_url)
 
 if __name__ == "__main__":
-    test_camera()
-    test_init()
-    test_start()
-    test_stream()
-    test_live()
-    test_stop()
-    test_close()
+    try:
+        test_camera()
+        test_init()
+        test_start()
+        test_stream()
+        test_live()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        test_stop()
+        test_close()
