@@ -21,6 +21,13 @@ class CarryState(BaseState):
         else:
             self.missing_product_frames = 0
 
+        # product at front or side
+        if 'PRODUCT_AT_FRONT' in events and 'PRODUCT_CARRIED' in events:
+            # Logger.warn("product 自front出現")
+            pass
+        if 'PRODUCT_AT_SIDE' in events:
+            Logger.warn("product 自 side 出現")
+
         # double hand check
         if 'PRODUCT_CARRIED_BY_BOTH_GLOVES' not in events:
             self.no_double_hand_frames += 1

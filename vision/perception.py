@@ -13,10 +13,47 @@ class Perception:
     # ======================================================
     # OD PARSE
     # ======================================================
-    def parse_od(self, od):
+    # def parse_od(self, od):
+    #     if not od:
+    #         return {
+    #             "product": None,
+    #             "glove_left": None,
+    #             "glove_right": None,
+    #         }
+
+    #     objs = od.get("last_location", [])
+
+    #     product = None
+    #     gloves = []
+
+    #     for o in objs:
+    #         det = Detection(
+    #             cls=o["cls"],
+    #             conf=o["conf"],
+    #             bbox=BBox(o["x1"], o["y1"], o["x2"], o["y2"]),
+    #         )
+
+    #         if o["cls"] == "product":
+    #             if product is None or det.conf > product.conf:
+    #                 product = det
+
+    #         elif o["cls"] == "glove":
+    #             gloves.append(det)
+
+    #     gloves = sorted(gloves, key=lambda g: g.bbox.x1)
+
+    #     return {
+    #         "product": product,
+    #         "glove_left": gloves[0] if len(gloves) > 0 else None,
+    #         "glove_right": gloves[-1] if len(gloves) > 1 else None,
+    #     }
+
+    def parse_worker_efs(self, od):
         if not od:
             return {
                 "product": None,
+                "front": None,
+                "side": None,
                 "glove_left": None,
                 "glove_right": None,
             }
@@ -24,6 +61,8 @@ class Perception:
         objs = od.get("last_location", [])
 
         product = None
+        front = None
+        side = None
         gloves = []
 
         for o in objs:
@@ -36,7 +75,12 @@ class Perception:
             if o["cls"] == "product":
                 if product is None or det.conf > product.conf:
                     product = det
-
+            elif o["cls"] == "front":
+                if front is None or det.conf > front.conf:
+                    front = det
+            elif o["cls"] == "side":
+                if side is None or det.conf > side.conf:
+                    side = det
             elif o["cls"] == "glove":
                 gloves.append(det)
 
@@ -44,6 +88,8 @@ class Perception:
 
         return {
             "product": product,
+            "front": front,
+            "side": side,
             "glove_left": gloves[0] if len(gloves) > 0 else None,
             "glove_right": gloves[-1] if len(gloves) > 1 else None,
         }
@@ -51,7 +97,7 @@ class Perception:
     # ======================================================
     # EFS PARSE (NO STATE, NO DEBOUNCE)
     # ======================================================
-    def parse_efs(self, efs):
+    def parse_platform_efs(self, efs):
         if not efs:
             return []
 
@@ -69,15 +115,17 @@ class Perception:
     # ======================================================
     # MERGE (FRAME OBSERVATION ONLY)
     # ======================================================
-    def merge(self, od, efs):
-        od_p = self.parse_od(od)
-        efs_p = self.parse_efs(efs)
+    def merge(self, worker_efs_result, platform_efs_result):
+        worker_p = self.parse_worker_efs(worker_efs_result)
+        platform_p = self.parse_platform_efs(platform_efs_result)
 
         return {
             # object-level perception
-            "product": od_p["product"],
-            "glove_left": od_p["glove_left"],
-            "glove_right": od_p["glove_right"],
+            "product": worker_p["product"],
+            "front": worker_p["front"],
+            "side": worker_p["side"],
+            "glove_left": worker_p["glove_left"],
+            "glove_right": worker_p["glove_right"],
             # raw event stream (NO interpretation)
-            "EFSevents": efs_p,
+            "EFSevents": platform_p,
         }

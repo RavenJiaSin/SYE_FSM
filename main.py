@@ -2,7 +2,7 @@ import time
 import config as cfg
 
 from vision.camera_client import CameraClient
-from vision.od_client import ODClient
+# from vision.od_client import ODClient
 from vision.efs_client import EFSClient
 from vision.perception import Perception
 from vision.vision_system import VisionSystem
@@ -16,11 +16,26 @@ def main():
 
     # ================= INIT =================
     camera = CameraClient(cfg.URL)
-    od = ODClient(cfg.URL, cfg.CAM_NAME, cfg.TASK_NAME, cfg.MODEL_NAME, cfg.THRESHOLD)
-    efs = EFSClient(cfg.URL, cfg.CAM_NAME, cfg.TASK_NAME, cfg.MODEL_NAME, cfg.ALERT_AREA, cfg.THRESHOLD)
+    # od = ODClient(cfg.URL, cfg.CAM_NAME, cfg.TASK_NAME, cfg.MODEL_NAME, cfg.THRESHOLD)
+    worker_efs = EFSClient(
+        cfg.URL,
+        cfg.CAM_NAME,
+        cfg.TASK_NAME[0],
+        cfg.MODEL_NAME,
+        cfg.WORKER_AREA,
+        cfg.THRESHOLD,
+    )
+    platform_efs = EFSClient(
+        cfg.URL,
+        cfg.CAM_NAME,
+        cfg.TASK_NAME[1],
+        cfg.MODEL_NAME,
+        cfg.PLATFORM_AREA,
+        cfg.THRESHOLD,
+    )
 
     perception = Perception()
-    vision = VisionSystem(od, efs, perception)
+    vision = VisionSystem(worker_efs, platform_efs, perception)
     event = EventEngine()
 
     fsm = FSMContext('idle')
@@ -33,16 +48,18 @@ def main():
 
     # ================= START =================
     camera.open(cfg.CAM_NAME, cfg.CAM_SRC)
-    od.init_model()
-    efs.init_model()
+    worker_efs.init_model()
+    platform_efs.init_model()
 
-    od.start()
-    efs.start()
+    worker_efs.start()
+    platform_efs.start()
 
     print("SYSTEM STARTED")
 
-    stream_url = f"{cfg.URL}/api/infer_od/live?name={cfg.TASK_NAME}"
-    webbrowser.open(stream_url)
+    stream_url_worker = f"{cfg.URL}/api/infer_efs/live?name={cfg.TASK_NAME[0]}"
+    stream_url_platform = f"{cfg.URL}/api/infer_efs/live?name={cfg.TASK_NAME[1]}"
+    webbrowser.open(stream_url_worker)
+    webbrowser.open(stream_url_platform)
 
     # ================= LOOP =================
     try:
@@ -52,6 +69,7 @@ def main():
 
             # 2. event engine
             events = event.update(obs)
+            
 
             # 3. update FSM
             fsm.update(events)
@@ -68,8 +86,8 @@ def main():
         print("STOPPING SYSTEM")
 
     finally:
-        od.stop()
-        efs.stop()
+        worker_efs.stop()
+        platform_efs.stop()
         camera.close(cfg.CAM_NAME)
 
 

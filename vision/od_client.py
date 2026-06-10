@@ -1,5 +1,10 @@
 # vision/od_client.py
 
+# =======================================================
+# NOT USEED in version 2026/06/10
+# Kept for reference, may be used in future for OD-based system or combined OD+EFS system
+# =======================================================
+
 import requests
 
 
