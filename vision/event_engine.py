@@ -48,10 +48,17 @@ class EventEngine:
 
         if product:
             self.events.add("PRODUCT_APPEAR")
+        
+        if (gl or gr) and (self.is_overlap((gl_box or gr_box), front_box)):
+            self.events.add("GLOVE_AT_FRONT")
+        if (gl or gr) and (self.is_overlap((gl_box or gr_box), side_box)):
+            self.events.add("GLOVE_AT_SIDE")
+
         if product and (self.is_overlap(p_box, front_box)):
             self.events.add("PRODUCT_AT_FRONT")
         if product and (self.is_overlap(p_box, side_box)):
             self.events.add("PRODUCT_AT_SIDE")
+
         if product and (self.is_overlap(p_box, gl_box) or self.is_overlap(p_box, gr_box)):
             self.events.add("PRODUCT_CARRIED")
         if product and self.is_overlap(p_box, gl_box) and self.is_overlap(p_box, gr_box):

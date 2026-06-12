@@ -38,6 +38,7 @@ def main():
     vision = VisionSystem(worker_efs, platform_efs, perception)
     event = EventEngine()
 
+    
     fsm = FSMContext('idle')
 
     # bind config to FSM
@@ -75,7 +76,9 @@ def main():
             fsm.update(events)
 
             # 4. debug output (optional)
-            # print(f"Events: {events}")
+            print(f"Events: {events}")
+            with open("debug_event.txt", "a", encoding="utf-8") as f:
+                f.write(f"Events: {events}\n")
 
             time.sleep(0.03)  # ~30 FPS control
 
