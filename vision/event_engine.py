@@ -16,6 +16,8 @@ class EventEngine:
 
     def __init__(self):
         self.events = set()
+        # self.prev_events = set()
+        # self.clock = 0
 
     def is_overlap(self, boxA, boxB):
         if boxA is None or boxB is None:
@@ -67,9 +69,9 @@ class EventEngine:
         if item_in_PLATFORM:
             for e in item_in_PLATFORM:
                 if e["label"] == "glove":
-                    self.events.add("GLOVE_IN_PLATFORM")
+                    self.events.add("GLOVE_AT_PLATFORM")
                 if e["label"] == "product":
-                    self.events.add("PRODUCT_IN_PLATFORM")
+                    self.events.add("PRODUCT_AT_PLATFORM")
 
         # # DEBUG
         # print("OBSERVATION:", obs)

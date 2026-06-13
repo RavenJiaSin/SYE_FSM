@@ -3,14 +3,24 @@ from utils.logger import Logger
 
 
 class IdleState(BaseState):
+    def __init__(self, context):
+        super().__init__(context)
+        
+
     def update(self, events):
-
-        if "PRODUCT_APPEAR" in events and "PRODUCT_CARRIED" in events:
-            self.context.transition_to("carry")
+        
+        if "GLOVE_AT_FRONT" in events:
+            self.context.direction = "to_platform"
+            self.context.transition_to("pick", direction=self.context.direction)
             return
-
-        # warning: idle touch platform
-        if "GLOVE_IN_PLATFORM" in events:
-            Logger.warn("手中沒product不應該觸碰PLATFORM")
+        if "GLOVE_AT_SIDE" in events:
+            self.context.direction = "to_platform"
+            self.context.transition_to("pick", direction=self.context.direction, pass_events=["GLOVE_AT_SIDE"])
+            return
+        if "GLOVE_AT_PLATFORM" in events:
+            self.context.direction = "to_cart"
+            self.context.transition_to("pick", direction=self.context.direction)
+            return
+        
 
         return

@@ -6,7 +6,7 @@ class WaitPlaceState(BaseState):
     def __init__(self, context):
         super().__init__(context)
         self.timeout_frame_counter = 0
-        self.missing_product_frames = 0
+        self.product_placing_frames = 0
 
     def update(self, events):
 
@@ -14,15 +14,21 @@ class WaitPlaceState(BaseState):
 
         # success condition
         if 'PRODUCT_APPEAR' not in events:
-            self.missing_product_frames += 1
-            if self.missing_product_frames > self.context.N_MISSING_FRAMES:
-                self.context.transition_to("place")
+            self.product_placing_frames += 1
+            if self.product_placing_frames > self.context.MIN_PLACING_FRAMES:
+                if self.context.pass_events == {"PRODUCT_AT_SIDE"}:
+                    Logger.warn("從側邊放置 PRODUCT", direction=self.context.direction)
+                self.context.transition_to("place", direction=self.context.direction)
                 self.timeout_frame_counter = 0
-                self.missing_product_frames = 0
+                self.product_placing_frames = 0
+                return
 
         # timeout
-        if self.timeout_frame_counter > self.context.WAIT_TIMEOUT_FRAMES:
-            Logger.warn("未完成放置動作（timeout）")
-            self.context.transition_to("carry")
+        if self.timeout_frame_counter > self.context.MAX_PLACING_FRAMES:
+            Logger.warn("未完成放置動作（timeout）", direction=self.context.direction)
+            self.context.transition_to("carry", direction=self.context.direction)
+            self.timeout_frame_counter = 0
+            self.product_placing_frames = 0
+            return
 
         return

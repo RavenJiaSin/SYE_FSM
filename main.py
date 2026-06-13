@@ -42,10 +42,11 @@ def main():
     fsm = FSMContext('idle')
 
     # bind config to FSM
-    fsm.N_MISSING_FRAMES = cfg.N_MISSING_FRAMES
-    fsm.N_DOUBLE_HAND_FRAMES = cfg.N_DOUBLE_HAND_FRAMES
-    fsm.WAIT_TIMEOUT_FRAMES = cfg.WAIT_TIMEOUT_FRAMES
-    fsm.MIN_PLACE_FRAMES = cfg.MIN_PLACE_FRAMES
+    fsm.MAX_PRODUCT_MISSING_FRAMES = cfg.MAX_PRODUCT_MISSING_FRAMES
+    fsm.MIN_DOUBLE_HAND_FRAMES = cfg.MIN_DOUBLE_HAND_FRAMES
+    fsm.MAX_PICK_UP_FRAMES = cfg.MAX_PICK_UP_FRAMES
+    fsm.MAX_PLACING_FRAMES = cfg.MAX_PLACING_FRAMES
+    fsm.MIN_PLACING_FRAMES = cfg.MIN_PLACING_FRAMES
 
     # ================= START =================
     camera.open(cfg.CAM_NAME, cfg.CAM_SRC)
@@ -76,9 +77,9 @@ def main():
             fsm.update(events)
 
             # 4. debug output (optional)
-            print(f"Events: {events}")
-            with open("debug_event.txt", "a", encoding="utf-8") as f:
-                f.write(f"Events: {events}\n")
+            # print(f"Events: {events}")
+            # with open("debug_event.txt", "a", encoding="utf-8") as f:
+            #     f.write(f"Events: {events}\n")
 
             time.sleep(0.03)  # ~30 FPS control
 
